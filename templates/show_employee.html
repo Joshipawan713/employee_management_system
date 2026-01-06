@@ -1,0 +1,1481 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>View Employees - Employee Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --accent-color: #17a2b8;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 70px;
+            --header-height: 70px;
+            --shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fb;
+            color: #333;
+            overflow-x: hidden;
+        }
+        
+        /* Layout */
+        .wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            transition: var(--transition);
+            z-index: 1000;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+        
+        .sidebar-header {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-header .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+        }
+        
+        .sidebar-header .logo i {
+            font-size: 1.8rem;
+        }
+        
+        .sidebar.collapsed .logo-text {
+            display: none;
+        }
+        
+        .sidebar.collapsed .logo i {
+            font-size: 2rem;
+        }
+        
+        .sidebar-menu {
+            padding: 20px 0;
+            overflow-y: auto;
+            height: calc(100vh - var(--header-height));
+        }
+        
+        .nav-item {
+            position: relative;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: var(--transition);
+            border-left: 3px solid transparent;
+            text-decoration: none;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left-color: var(--accent-color);
+        }
+        
+        .nav-link i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .sidebar.collapsed .nav-text {
+            display: none;
+        }
+        
+        .sidebar.collapsed .nav-link {
+            justify-content: center;
+            padding: 15px 0;
+        }
+        
+        /* Main Content */
+        .main {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            transition: var(--transition);
+        }
+        
+        .sidebar.collapsed ~ .main {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+        
+        /* Top Header */
+        .top-header {
+            height: var(--header-height);
+            background-color: white;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+        
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            color: var(--dark-color);
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .toggle-sidebar:hover {
+            color: var(--primary-color);
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .user-dropdown {
+            position: relative;
+        }
+        
+        .user-btn {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            color: var(--dark-color);
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        /* Content Area */
+        .content {
+            padding: 25px;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .page-title h1 {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 5px;
+        }
+        
+        .page-title p {
+            color: #6c757d;
+            margin-bottom: 0;
+        }
+        
+        /* Stats Cards */
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: var(--transition);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .stat-icon.total {
+            background: linear-gradient(135deg, var(--primary-color), #6c8bc7);
+        }
+        
+        .stat-icon.active {
+            background: linear-gradient(135deg, var(--success-color), #5cb85c);
+        }
+        
+        .stat-icon.inactive {
+            background: linear-gradient(135deg, var(--danger-color), #e35d6a);
+        }
+        
+        .stat-icon.departments {
+            background: linear-gradient(135deg, var(--accent-color), #5bc0de);
+        }
+        
+        .stat-info h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--dark-color);
+        }
+        
+        .stat-info p {
+            color: #6c757d;
+            margin-bottom: 0;
+            font-size: 0.9rem;
+        }
+        
+        /* Filter Section */
+        .filter-section {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .filter-title {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0;
+        }
+        
+        .filter-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-label {
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .filter-control {
+            border-radius: 8px;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            transition: var(--transition);
+        }
+        
+        .filter-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(74, 111, 165, 0.25);
+        }
+        
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        
+        .btn-filter {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        
+        .btn-filter-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-filter-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            color: white;
+        }
+        
+        /* Employee Table Card */
+        .table-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        
+        .table-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-title {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0;
+        }
+        
+        .search-box {
+            position: relative;
+            width: 300px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            transition: var(--transition);
+        }
+        
+        .search-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(74, 111, 165, 0.25);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+        
+        /* Table Styling */
+        .table-container {
+            padding: 20px;
+            overflow-x: auto;
+        }
+        
+        .dataTables_wrapper {
+            width: 100%;
+        }
+        
+        .employee-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        .employee-table thead th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+            color: var(--dark-color);
+            padding: 15px;
+            text-align: left;
+            white-space: nowrap;
+        }
+        
+        .employee-table tbody td {
+            padding: 15px;
+            vertical-align: middle;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .employee-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .employee-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .employee-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .employee-details {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .employee-name {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 3px;
+        }
+        
+        .employee-id {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+        
+        .employee-contact {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        
+        .employee-email, .employee-phone {
+            font-size: 0.9rem;
+            color: #555;
+        }
+        
+        .employee-email {
+            word-break: break-all;
+        }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .status-active {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success-color);
+        }
+        
+        .status-inactive {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger-color);
+        }
+        
+        .status-onleave {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8f9fa;
+            color: var(--dark-color);
+            border: none;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .action-view:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .action-edit:hover {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .action-delete:hover {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        /* Pagination Styling */
+        .dataTables_paginate {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .paginate_button {
+            padding: 8px 12px;
+            margin: 0 3px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            background-color: white;
+            color: var(--dark-color);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .paginate_button:hover {
+            background-color: #f8f9fa;
+            border-color: #ccc;
+        }
+        
+        .paginate_button.current {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        /* Employee Details Modal */
+        .modal-content {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 10px 10px 0 0;
+            padding: 20px;
+            border-bottom: none;
+        }
+        
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+            opacity: 0.8;
+        }
+        
+        .modal-header .btn-close:hover {
+            opacity: 1;
+        }
+        
+        .employee-modal-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), #5bc0de);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 2rem;
+            margin: -40px auto 20px;
+            border: 4px solid white;
+            box-shadow: var(--shadow);
+        }
+        
+        .modal-body {
+            padding: 30px;
+        }
+        
+        .info-section {
+            margin-bottom: 25px;
+        }
+        
+        .info-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .info-label {
+            font-weight: 500;
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            color: var(--dark-color);
+            font-weight: 500;
+        }
+        
+        .documents-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .document-item {
+            padding: 10px 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: var(--transition);
+        }
+        
+        .document-item:hover {
+            background-color: #e9ecef;
+        }
+        
+        .document-icon {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+        
+        .document-name {
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+        
+        .document-view {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+        
+        .document-view:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                margin-left: calc(-1 * var(--sidebar-width));
+            }
+            
+            .sidebar.show {
+                margin-left: 0;
+            }
+            
+            .main {
+                margin-left: 0;
+            }
+            
+            .sidebar.collapsed ~ .main {
+                margin-left: 0;
+            }
+            
+            .sidebar.collapsed {
+                margin-left: calc(-1 * var(--sidebar-collapsed-width));
+            }
+            
+            .search-box {
+                width: 100%;
+                margin-top: 15px;
+            }
+            
+            .table-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .stats-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .filter-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .stats-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .action-btn {
+                width: 30px;
+                height: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        {% include 'sidebar.html' %}
+        
+        <main class="main">
+            <!-- Top Header -->
+            <header class="top-header">
+                <button class="toggle-sidebar" id="toggleSidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <div class="header-actions">
+                    <!-- User Profile -->
+                    <div class="user-dropdown">
+                        <button class="user-btn">
+                            <div class="user-info">
+                                <div class="user-avatar">AD</div>
+                                <div class="user-name d-none d-md-block">Admin User</div>
+                                <i class="fas fa-chevron-down ms-2"></i>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Content Area -->
+            <div class="content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="page-title">
+                        <h1>Employee Management</h1>
+                        <p>View, search, and manage all employees in the system.</p>
+                    </div>
+                    <div>
+                        <a href="add-employee.html" class="btn btn-primary">
+                            <i class="fas fa-user-plus me-2"></i>Add New Employee
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-icon total">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalEmployees">142</h3>
+                            <p>Total Employees</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon active">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="activeEmployees">128</h3>
+                            <p>Active Employees</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon inactive">
+                            <i class="fas fa-user-times"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="inactiveEmployees">14</h3>
+                            <p>Inactive Employees</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon departments">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>8</h3>
+                            <p>Departments</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filter Section -->
+                <div class="filter-section">
+                    <div class="filter-header">
+                        <h5 class="filter-title">Filter Employees</h5>
+                        <button class="btn btn-outline-secondary btn-sm" id="resetFilters">
+                            <i class="fas fa-redo me-1"></i> Reset Filters
+                        </button>
+                    </div>
+                    
+                    <div class="filter-form">
+                        <div class="filter-group">
+                            <label class="filter-label">Search by Name/ID</label>
+                            <input type="text" class="filter-control" id="searchInput" placeholder="Enter name or employee ID">
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label class="filter-label">Department</label>
+                            <select class="filter-control" id="departmentFilter">
+                                <option value="">All Departments</option>
+                                <option value="Engineering">Engineering</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Sales">Sales</option>
+                                <option value="Human Resources">Human Resources</option>
+                                <option value="Finance">Finance</option>
+                                <option value="Operations">Operations</option>
+                                <option value="IT Support">IT Support</option>
+                                <option value="Research & Development">Research & Development</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label class="filter-label">Status</label>
+                            <select class="filter-control" id="statusFilter">
+                                <option value="">All Status</option>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                                <option value="On Leave">On Leave</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-actions">
+                            <button class="btn btn-filter btn-filter-primary" id="applyFilters">
+                                <i class="fas fa-filter me-1"></i> Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Employee Table Card -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h5 class="table-title">Employee Records</h5>
+                        <div class="search-box">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" class="search-input" id="tableSearch" placeholder="Search employees...">
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table id="employeeTable" class="employee-table">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Contact</th>
+                                    <th>Department</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th>Join Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employeeTableBody">
+                                <!-- Employee rows will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Employee Details Modal -->
+    <div class="modal fade" id="employeeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Employee Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="employee-modal-avatar" id="modalAvatar">JD</div>
+                    
+                    <div class="info-section">
+                        <div class="section-title">
+                            <i class="fas fa-user"></i>
+                            Personal Information
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Full Name</span>
+                                <span class="info-value" id="modalName">John Doe</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Employee ID</span>
+                                <span class="info-value" id="modalId">EMP-001</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Email Address</span>
+                                <span class="info-value" id="modalEmail">john.doe@example.com</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Mobile Number</span>
+                                <span class="info-value" id="modalMobile">+91 9876543210</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-section">
+                        <div class="section-title">
+                            <i class="fas fa-briefcase"></i>
+                            Employment Details
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Department</span>
+                                <span class="info-value" id="modalDepartment">Engineering</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Position</span>
+                                <span class="info-value" id="modalPosition">Senior Developer</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Status</span>
+                                <span class="info-value">
+                                    <span class="status-badge status-active" id="modalStatus">Active</span>
+                                </span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Join Date</span>
+                                <span class="info-value" id="modalJoinDate">2023-01-15</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-section">
+                        <div class="section-title">
+                            <i class="fas fa-home"></i>
+                            Address Information
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Address</span>
+                                <span class="info-value" id="modalAddress">123 Main Street, Tech Park</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">City/District</span>
+                                <span class="info-value" id="modalDistrict">Bangalore</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">State</span>
+                                <span class="info-value" id="modalState">Karnataka</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Pincode</span>
+                                <span class="info-value" id="modalPincode">560001</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-section">
+                        <div class="section-title">
+                            <i class="fas fa-file-alt"></i>
+                            Documents
+                        </div>
+                        <div class="documents-list" id="modalDocuments">
+                            <div class="document-item">
+                                <i class="fas fa-file-pdf document-icon"></i>
+                                <span class="document-name">PAN Card</span>
+                                <button class="document-view">View</button>
+                            </div>
+                            <div class="document-item">
+                                <i class="fas fa-id-card document-icon"></i>
+                                <span class="document-name">Aadhar Card</span>
+                                <button class="document-view">View</button>
+                            </div>
+                            <div class="document-item">
+                                <i class="fas fa-graduation-cap document-icon"></i>
+                                <span class="document-name">10th Certificate</span>
+                                <button class="document-view">View</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="editEmployeeBtn">
+                        <i class="fas fa-edit me-1"></i> Edit Employee
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- DataTables -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    
+    <script>
+        // Sample employee data
+        const employees = [
+            {
+                id: 1,
+                unique_id: "EMP-001",
+                name: "John Doe",
+                email: "john.doe@example.com",
+                mobile: "9876543210",
+                department: "Engineering",
+                position: "Senior Developer",
+                state: "Karnataka",
+                district: "Bangalore",
+                pincode: "560001",
+                status: "Active",
+                add_date: "2023-01-15",
+                address: "123 Main Street, Tech Park"
+            },
+            {
+                id: 2,
+                unique_id: "EMP-002",
+                name: "Jane Smith",
+                email: "jane.smith@example.com",
+                mobile: "9876543211",
+                department: "Marketing",
+                position: "Marketing Manager",
+                state: "Maharashtra",
+                district: "Mumbai",
+                pincode: "400001",
+                status: "Active",
+                add_date: "2023-02-20",
+                address: "456 Park Avenue, Business District"
+            },
+            {
+                id: 3,
+                unique_id: "EMP-003",
+                name: "Robert Brown",
+                email: "robert.brown@example.com",
+                mobile: "9876543212",
+                department: "Human Resources",
+                position: "HR Manager",
+                state: "Delhi",
+                district: "New Delhi",
+                pincode: "110001",
+                status: "On Leave",
+                add_date: "2023-03-10",
+                address: "789 Corporate Road, Sector 18"
+            },
+            {
+                id: 4,
+                unique_id: "EMP-004",
+                name: "Alice Wilson",
+                email: "alice.wilson@example.com",
+                mobile: "9876543213",
+                department: "Finance",
+                position: "Accountant",
+                state: "Tamil Nadu",
+                district: "Chennai",
+                pincode: "600001",
+                status: "Active",
+                add_date: "2023-04-05",
+                address: "321 Finance Street, CBD"
+            },
+            {
+                id: 5,
+                unique_id: "EMP-005",
+                name: "Michael Johnson",
+                email: "michael.johnson@example.com",
+                mobile: "9876543214",
+                department: "Sales",
+                position: "Sales Executive",
+                state: "Gujarat",
+                district: "Ahmedabad",
+                pincode: "380001",
+                status: "Inactive",
+                add_date: "2023-05-12",
+                address: "654 Sales Avenue, Commercial Area"
+            },
+            {
+                id: 6,
+                unique_id: "EMP-006",
+                name: "Sarah Williams",
+                email: "sarah.williams@example.com",
+                mobile: "9876543215",
+                department: "Engineering",
+                position: "Frontend Developer",
+                state: "Karnataka",
+                district: "Bangalore",
+                pincode: "560002",
+                status: "Active",
+                add_date: "2023-06-18",
+                address: "987 Tech Lane, IT Park"
+            },
+            {
+                id: 7,
+                unique_id: "EMP-007",
+                name: "David Miller",
+                email: "david.miller@example.com",
+                mobile: "9876543216",
+                department: "Operations",
+                position: "Operations Manager",
+                state: "Maharashtra",
+                district: "Pune",
+                pincode: "411001",
+                status: "Active",
+                add_date: "2023-07-22",
+                address: "147 Operations Road, Industrial Area"
+            },
+            {
+                id: 8,
+                unique_id: "EMP-008",
+                name: "Emily Davis",
+                email: "emily.davis@example.com",
+                mobile: "9876543217",
+                department: "IT Support",
+                position: "System Administrator",
+                state: "Telangana",
+                district: "Hyderabad",
+                pincode: "500001",
+                status: "Active",
+                add_date: "2023-08-30",
+                address: "258 Support Street, HITEC City"
+            },
+            {
+                id: 9,
+                unique_id: "EMP-009",
+                name: "James Wilson",
+                email: "james.wilson@example.com",
+                mobile: "9876543218",
+                department: "Research & Development",
+                position: "Research Scientist",
+                state: "Karnataka",
+                district: "Bangalore",
+                pincode: "560003",
+                status: "Active",
+                add_date: "2023-09-14",
+                address: "369 Research Boulevard, Science Park"
+            },
+            {
+                id: 10,
+                unique_id: "EMP-010",
+                name: "Olivia Taylor",
+                email: "olivia.taylor@example.com",
+                mobile: "9876543219",
+                department: "Marketing",
+                position: "Digital Marketer",
+                state: "Maharashtra",
+                district: "Mumbai",
+                pincode: "400002",
+                status: "On Leave",
+                add_date: "2023-10-05",
+                address: "741 Digital Avenue, Media Hub"
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle sidebar
+            const toggleSidebarBtn = document.getElementById('toggleSidebar');
+            const sidebar = document.getElementById('sidebar');
+            
+            toggleSidebarBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+            });
+            
+            // Initialize DataTable
+            const table = $('#employeeTable').DataTable({
+                data: employees,
+                columns: [
+                    { 
+                        data: null,
+                        render: function(data, type, row) {
+                            const initials = row.name.split(' ').map(n => n[0]).join('').toUpperCase();
+                            return `
+                                <div class="employee-info">
+                                    <div class="employee-avatar">${initials}</div>
+                                    <div class="employee-details">
+                                        <div class="employee-name">${row.name}</div>
+                                        <div class="employee-id">${row.unique_id}</div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    },
+                    {
+                        data: null,
+                        render: function(data, type, row) {
+                            return `
+                                <div class="employee-contact">
+                                    <div class="employee-email">${row.email}</div>
+                                    <div class="employee-phone">+91 ${row.mobile}</div>
+                                </div>
+                            `;
+                        }
+                    },
+                    { data: 'department' },
+                    {
+                        data: null,
+                        render: function(data, type, row) {
+                            return `${row.district}, ${row.state}`;
+                        }
+                    },
+                    {
+                        data: 'status',
+                        render: function(data, type, row) {
+                            let statusClass = 'status-active';
+                            if (data === 'Inactive') statusClass = 'status-inactive';
+                            if (data === 'On Leave') statusClass = 'status-onleave';
+                            
+                            return `<span class="status-badge ${statusClass}">${data}</span>`;
+                        }
+                    },
+                    { data: 'add_date' },
+                    {
+                        data: null,
+                        render: function(data, type, row) {
+                            return `
+                                <div class="action-buttons">
+                                    <button class="action-btn action-view" title="View Details" data-id="${row.id}">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="action-btn action-edit" title="Edit Employee" data-id="${row.id}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="action-btn action-delete" title="Delete Employee" data-id="${row.id}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            `;
+                        },
+                        orderable: false
+                    }
+                ],
+                pageLength: 10,
+                responsive: true,
+                language: {
+                    search: "",
+                    searchPlaceholder: "Search employees...",
+                    lengthMenu: "Show _MENU_ entries",
+                    info: "Showing _START_ to _END_ of _TOTAL_ employees",
+                    infoEmpty: "Showing 0 to 0 of 0 employees",
+                    paginate: {
+                        first: "First",
+                        last: "Last",
+                        next: "Next",
+                        previous: "Previous"
+                    }
+                },
+                initComplete: function() {
+                    // Update stats after table is loaded
+                    updateEmployeeStats();
+                }
+            });
+            
+            // Custom search input for DataTables
+            $('#tableSearch').on('keyup', function() {
+                table.search(this.value).draw();
+            });
+            
+            // Filter functionality
+            $('#applyFilters').on('click', function() {
+                const searchValue = $('#searchInput').val();
+                const departmentValue = $('#departmentFilter').val();
+                const statusValue = $('#statusFilter').val();
+                
+                // Combine filters
+                table.columns().search('');
+                
+                if (searchValue) {
+                    table.search(searchValue).draw();
+                }
+                
+                if (departmentValue) {
+                    table.column(2).search(departmentValue).draw();
+                }
+                
+                if (statusValue) {
+                    table.column(4).search(statusValue).draw();
+                }
+                
+                // If all filters are empty, show all
+                if (!searchValue && !departmentValue && !statusValue) {
+                    table.search('').columns().search('').draw();
+                }
+            });
+            
+            // Reset filters
+            $('#resetFilters').on('click', function() {
+                $('#searchInput').val('');
+                $('#departmentFilter').val('');
+                $('#statusFilter').val('');
+                table.search('').columns().search('').draw();
+                updateEmployeeStats();
+            });
+            
+            // Employee details modal
+            const employeeModal = new bootstrap.Modal(document.getElementById('employeeModal'));
+            
+            // View employee details
+            $(document).on('click', '.action-view', function() {
+                const employeeId = $(this).data('id');
+                const employee = employees.find(emp => emp.id === employeeId);
+                
+                if (employee) {
+                    // Update modal content
+                    const initials = employee.name.split(' ').map(n => n[0]).join('').toUpperCase();
+                    document.getElementById('modalAvatar').textContent = initials;
+                    document.getElementById('modalName').textContent = employee.name;
+                    document.getElementById('modalId').textContent = employee.unique_id;
+                    document.getElementById('modalEmail').textContent = employee.email;
+                    document.getElementById('modalMobile').textContent = `+91 ${employee.mobile}`;
+                    document.getElementById('modalDepartment').textContent = employee.department;
+                    document.getElementById('modalPosition').textContent = employee.position;
+                    document.getElementById('modalAddress').textContent = employee.address;
+                    document.getElementById('modalDistrict').textContent = employee.district;
+                    document.getElementById('modalState').textContent = employee.state;
+                    document.getElementById('modalPincode').textContent = employee.pincode;
+                    document.getElementById('modalJoinDate').textContent = employee.add_date;
+                    
+                    // Update status badge
+                    const statusBadge = document.getElementById('modalStatus');
+                    statusBadge.textContent = employee.status;
+                    statusBadge.className = 'status-badge ';
+                    
+                    if (employee.status === 'Active') statusBadge.classList.add('status-active');
+                    else if (employee.status === 'Inactive') statusBadge.classList.add('status-inactive');
+                    else statusBadge.classList.add('status-onleave');
+                    
+                    // Set edit button data
+                    document.getElementById('editEmployeeBtn').dataset.id = employee.id;
+                    
+                    // Show modal
+                    employeeModal.show();
+                }
+            });
+            
+            // Edit employee
+            document.getElementById('editEmployeeBtn').addEventListener('click', function() {
+                const employeeId = this.dataset.id;
+                employeeModal.hide();
+                alert(`Edit employee with ID: ${employeeId}\nIn a real application, this would redirect to the edit page.`);
+                // window.location.href = `edit-employee.html?id=${employeeId}`;
+            });
+            
+            // Delete employee
+            $(document).on('click', '.action-delete', function() {
+                const employeeId = $(this).data('id');
+                const employee = employees.find(emp => emp.id === employeeId);
+                
+                if (employee && confirm(`Are you sure you want to delete ${employee.name} (${employee.unique_id})?`)) {
+                    // In real application, this would be an API call
+                    alert(`${employee.name} has been deleted successfully.`);
+                    
+                    // Remove from table
+                    const rowIndex = employees.findIndex(emp => emp.id === employeeId);
+                    if (rowIndex > -1) {
+                        employees.splice(rowIndex, 1);
+                        table.clear().rows.add(employees).draw();
+                        updateEmployeeStats();
+                    }
+                }
+            });
+            
+            // Update employee statistics
+            function updateEmployeeStats() {
+                const totalEmployees = employees.length;
+                const activeEmployees = employees.filter(emp => emp.status === 'Active').length;
+                const inactiveEmployees = employees.filter(emp => emp.status === 'Inactive').length;
+                
+                document.getElementById('totalEmployees').textContent = totalEmployees;
+                document.getElementById('activeEmployees').textContent = activeEmployees;
+                document.getElementById('inactiveEmployees').textContent = inactiveEmployees;
+            }
+            
+            // Export functionality (placeholder)
+            $(document).on('click', '#exportBtn', function() {
+                alert('Export functionality would be implemented here.\nOptions: Export to Excel, PDF, or CSV.');
+            });
+            
+            // Document view buttons in modal
+            $(document).on('click', '.document-view', function(e) {
+                e.preventDefault();
+                const docName = $(this).siblings('.document-name').text();
+                alert(`Viewing ${docName}\nIn a real application, this would open the document in a viewer or download it.`);
+            });
+        });
+    </script>
+</body>
+</html>
